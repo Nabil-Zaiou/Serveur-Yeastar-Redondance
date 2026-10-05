@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Architecture téléphonie Yeastar P570</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0e2238;--paper:#f6f8fa;--sig:#0fa88f;--warn:#e8a317;--down:#d64545;--mute:#5d6f82;--line:#d9e1e8;--card:#fff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:17px/1.6 Figtree,system-ui,sans-serif;color:var(--ink);background:var(--paper)}
+h1,h2,h3{font-family:'Bricolage Grotesque',Figtree,sans-serif;line-height:1.1;margin:0}
+a{color:inherit}
+.wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+header.hero{background:var(--ink);color:#fff;padding:72px 0 40px}
+.hero h1{font-size:clamp(38px,6vw,68px);font-weight:800;max-width:15ch;letter-spacing:-.02em}
+.hero p.lead{max-width:56ch;color:#b8c7d6;font-size:19px;margin:20px 0 0}
+.facts{display:flex;flex-wrap:wrap;gap:12px 36px;margin-top:36px;padding:0;list-style:none}
+.facts li{border-left:3px solid var(--sig);padding-left:12px}
+.facts b{display:block;font:700 28px 'Bricolage Grotesque',sans-serif}
+.facts span{color:#b8c7d6;font-size:15px}
+nav{position:sticky;top:0;z-index:5;background:rgba(246,248,250,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;gap:22px;overflow-x:auto;padding-top:12px;padding-bottom:12px;white-space:nowrap;font-weight:500;font-size:15px}
+nav a{text-decoration:none;color:var(--mute)}nav a:hover,nav a:focus-visible{color:var(--ink)}
+section{padding:64px 0 8px}
+h2{font-size:clamp(28px,4vw,40px);font-weight:700;margin-bottom:12px}
+.sub{color:var(--mute);max-width:62ch;margin:0 0 28px}
+.demo{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.ctrl button{font:600 15px Figtree,sans-serif;padding:9px 16px;border-radius:999px;border:1.5px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer}
+.ctrl button[aria-pressed=true]{background:var(--down);border-color:var(--down);color:#fff}
+.ctrl button:focus-visible{outline:3px solid var(--sig);outline-offset:2px}
+#status{font-weight:600;min-height:1.6em;margin:4px 0 8px}
+svg{width:100%;height:auto;display:block}
+svg text{font-family:Figtree,sans-serif;font-size:15px;fill:var(--ink);text-anchor:middle}
+svg .t2{font-size:12.5px;fill:var(--mute)}
+.l{fill:none;stroke-width:3;transition:stroke .3s}
+.l[data-s=on]{stroke:var(--sig)}
+.l[data-s=idle]{stroke:#9aa7b5;stroke-dasharray:6 6;stroke-width:2}
+.l[data-s=down]{stroke:var(--down);stroke-dasharray:2 8;stroke-linecap:round;opacity:.7}
+.n rect{fill:#fff;stroke-width:2.5;transition:all .3s}
+.n[data-s=on] rect{stroke:var(--sig);fill:#e6f6f3}
+.n[data-s=idle] rect{stroke:#9aa7b5}
+.n[data-s=down] rect{stroke:var(--down);fill:#fbe9e9}
+.n[data-s=down] text{fill:var(--down)}
+.fixed rect{stroke:var(--ink);fill:#fff;stroke-width:2.5}
+.lan rect{fill:var(--ink)}.lan text{fill:#fff;font-weight:600}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px}
+.card h3{font-size:22px;margin-bottom:8px}
+.card p,.card li{color:#33475b}
+.card ul{padding-left:20px;margin:8px 0 0}
+.tag{display:inline-block;font-weight:600;font-size:13px;padding:3px 10px;border-radius:999px;margin-bottom:10px}
+.t-sig{background:#d6f2ec;color:#07705f}.t-warn{background:#fcefcd;color:#8a5c00}.t-ink{background:#dde6ef}
+.bw{margin:20px 0 6px;height:34px;border-radius:8px;background:#e6edf3;overflow:hidden;position:relative}
+.bw i{position:absolute;left:0;top:0;bottom:0;width:12%;background:var(--sig)}
+.bw span{position:absolute;right:12px;top:5px;font-weight:600}
+.bwl{display:flex;justify-content:space-between;font-size:14px;color:var(--mute)}
+code{font:500 .92em ui-monospace,Menlo,monospace;background:#e6edf3;padding:1px 6px;border-radius:5px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+th,td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--line)}
+th{background:var(--ink);color:#fff;font-weight:600}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;width:40%}
+.scroll{overflow-x:auto}
+.vlan{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 0}
+.vlan div{flex:1 1 150px;border-radius:10px;padding:12px 14px;background:#fff;border:1px solid var(--line);border-top:5px solid #9aa7b5}
+.vlan div.v{border-top-color:var(--sig);background:#e6f6f3}
+.vlan b{font-family:'Bricolage Grotesque';font-size:20px;display:block}
+.principle{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.principle div{background:var(--ink);color:#fff;border-radius:14px;padding:24px}
+.principle h3{color:#fff;font-size:22px;margin-bottom:6px}.principle p{margin:0;color:#b8c7d6}
+.principle .arrow{font:700 20px 'Bricolage Grotesque';color:var(--sig);margin-bottom:8px}
+footer{margin-top:72px;padding:28px 0;border-top:1px solid var(--line);color:var(--mute);font-size:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>Téléphonie IP redondée avec Yeastar P570</h1>
+    <p class="lead">Deux IPBX en Hot Standby et un accès Internet double (FTTO + FTTH) pour qu'une panne matérielle ou réseau n'interrompe pas les appels.</p>
+    <ul class="facts">
+      <li><b>2 × P570</b><span>même site, même LAN</span></li>
+      <li><b>500</b><span>extensions maximum</span></li>
+      <li><b>120</b><span>appels simultanés</span></li>
+      <li><b>3 liens</b><span>FTTO, FTTH, 4G/5G</span></li>
+    </ul>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#archi">Architecture</a><a href="#redondance">Redondance</a><a href="#bande">Bande passante</a><a href="#reseau">Réseau & QoS</a><a href="#trunks">Trunks SIP</a><a href="#synthese">Synthèse</a>
+</div></nav>
+
+<main class="wrap">
+
+<section id="archi">
+  <h2>Architecture générale</h2>
+  <p class="sub">Les deux P570 sont sur le même réseau local : le Hot Standby fonctionne sans VPN intersite. Simulez une panne pour voir la bascule.</p>
+  <div class="demo">
+    <div class="ctrl">
+      <button type="button" data-k="ftto" aria-pressed="false">Panne FTTO</button>
+      <button type="button" data-k="ftth" aria-pressed="false">Panne FTTH</button>
+      <button type="button" data-k="a" aria-pressed="false">Panne P570 A</button>
+    </div>
+    <div id="status" role="status" aria-live="polite"></div>
+    <svg viewBox="0 0 760 500" role="img" aria-label="Schéma : Internet, trois liens (FTTO, FTTH, 4G/5G), firewall Dual-WAN, LAN VoIP et deux P570 en Hot Standby">
+      <g class="fixed"><rect x="300" y="8" width="160" height="44" rx="22"/><text x="380" y="36">Internet</text></g>
+      <path class="l" data-w="ftto" d="M380 52 L180 110"/><path class="l" data-w="ftth" d="M380 52 L380 110"/><path class="l" data-w="g" d="M380 52 L580 110"/>
+      <path class="l" data-w="ftto" d="M180 154 L350 210"/><path class="l" data-w="ftth" d="M380 154 L380 210"/><path class="l" data-w="g" d="M580 154 L410 210"/>
+      <g class="n" data-w="ftto"><rect x="105" y="110" width="150" height="44" rx="10"/><text x="180" y="130">FTTO</text><text class="t2" x="180" y="146">primaire</text></g>
+      <g class="n" data-w="ftth"><rect x="305" y="110" width="150" height="44" rx="10"/><text x="380" y="130">FTTH</text><text class="t2" x="380" y="146">secours</text></g>
+      <g class="n" data-w="g"><rect x="505" y="110" width="150" height="44" rx="10"/><text x="580" y="130">4G / 5G</text><text class="t2" x="580" y="146">ultime</text></g>
+      <g class="fixed"><rect x="290" y="210" width="180" height="52" rx="10"/><text x="380" y="233">Firewall / Routeur</text><text class="t2" x="380" y="251">Dual-WAN</text></g>
+      <path class="l" data-s="on" d="M380 262 L380 318" style="stroke:var(--ink)"/>
+      <g class="lan"><rect x="100" y="318" width="560" height="36" rx="8"/><text x="380" y="342">LAN · VLAN 30 VoIP · 192.168.30.0/24</text></g>
+      <path class="l" data-p="a" d="M260 354 L260 400"/><path class="l" data-p="b" d="M500 354 L500 400"/>
+      <path class="l" data-p="b" d="M350 428 L410 428" style="stroke-dasharray:4 4"/>
+      <g class="n" data-p="a"><rect x="165" y="400" width="190" height="58" rx="10"/><text x="260" y="424">P570 A · .10</text><text class="t2" x="260" y="445">principal</text></g>
+      <g class="n" data-p="b"><rect x="405" y="400" width="190" height="58" rx="10"/><text x="500" y="424">P570 B · .11</text><text class="t2" x="500" y="445">secondaire</text></g>
+      <text class="t2" x="380" y="484">Hot Standby · IP virtuelle 192.168.30.12</text>
+    </svg>
+  </div>
+</section>
+
+<section id="redondance">
+  <h2>Deux redondances indépendantes</h2>
+  <p class="sub">Une panne du lien Internet et une panne matérielle de l'IPBX se traitent séparément.</p>
+  <div class="cols">
+    <div class="card">
+      <span class="tag t-sig">Téléphonie</span>
+      <h3>Hot Standby : P570 A → P570 B</h3>
+      <p>Le P570 A est le PBX principal. Le P570 B prend le relais s'il tombe en panne, pour éviter une coupure complète de la téléphonie.</p>
+    </div>
+    <div class="card">
+      <span class="tag t-warn">Réseau</span>
+      <h3>Dual-WAN : FTTO → FTTH</h3>
+      <p>Le firewall gère la bascule automatique vers la FTTH si la FTTO est perdue. Le lien principal porte le SIP, Linkus, les services Yeastar, l'administration distante et le reste du réseau.</p>
+    </div>
+    <div class="card">
+      <span class="tag t-ink">Option</span>
+      <h3>4G/5G en troisième niveau</h3>
+      <p>Une connexion mobile garde une connectivité IP si les deux accès fixes sont indisponibles, selon la couverture et la configuration. Une SIM dans le P570 peut aussi servir de secours GSM : c'est un secours téléphonique, pas Internet.</p>
+    </div>
+  </div>
+</section>
+
+<section id="bande">
+  <h2>Dimensionnement de la bande passante</h2>
+  <p class="sub">Le besoin dépend du nombre d'appels simultanés, pas des 500 extensions.</p>
+  <div class="card">
+    <p>En G.711, comptez environ <b>100 kbit/s par communication et par sens</b>, overheads réseau inclus.</p>
+    <p><code>120 × 100 kbit/s ≈ 12 Mbit/s par sens</code></p>
+    <div class="bw" role="img" aria-label="12 Mbit/s utilisés sur 100 Mbit/s"><i></i><span>100 Mbit/s</span></div>
+    <div class="bwl"><span>Voix : ≈ 12 Mbit/s</span><span>FTTO retenue : 100 Mbit/s symétrique</span></div>
+    <p style="margin-bottom:0">La FTTH de secours (300 Mbit/s à 1 Gbit/s) reprend largement le trafic voix. Gardez une marge pour ne pas exploiter le lien à sa limite.</p>
+  </div>
+</section>
+
+<section id="reseau">
+  <h2>Réseau local et QoS</h2>
+  <p class="sub">La voix est séparée du trafic informatique dans un VLAN dédié, et les flux RTP sont prioritaires pour limiter la latence, la gigue et la perte de paquets.</p>
+  <div class="vlan">
+    <div><b>VLAN 10</b>Administration</div><div><b>VLAN 20</b>Informatique</div><div class="v"><b>VLAN 30</b>VoIP</div><div><b>VLAN 40</b>Serveurs</div>
+  </div>
+  <div class="scroll" style="margin-top:20px"><table>
+    <tr><th>Élément</th><th>Adresse (exemple)</th></tr>
+    <tr><td>Réseau VoIP</td><td><code>192.168.30.0/24</code></td></tr>
+    <tr><td>P570 A</td><td><code>192.168.30.10</code></td></tr>
+    <tr><td>P570 B</td><td><code>192.168.30.11</code></td></tr>
+    <tr><td>IP virtuelle Hot Standby</td><td><code>192.168.30.12</code></td></tr>
+  </table></div>
+  <p class="sub" style="margin-top:12px">Adresses données à titre d'exemple : à adapter à votre plan d'adressage.</p>
+</section>
+
+<section id="trunks">
+  <h2>Postes, utilisateurs et trunks SIP</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>Ce que l'infrastructure supporte</h3>
+      <ul><li>Jusqu'à 500 extensions</li><li>Téléphones IP physiques</li><li>Utilisateurs Linkus (mobile et ordinateur)</li><li>Appels internes et externes via trunks SIP</li></ul>
+    </div>
+    <div class="card">
+      <h3>À définir avec l'opérateur SIP</h3>
+      <p>Le nombre de canaux du trunk peut être inférieur aux 120 appels du P570.</p>
+      <ul><li>Nombre de canaux SIP</li><li>Appels entrants et sortants simultanés maximum</li><li>Numéros SDA/DDI</li><li>Présentation du numéro</li><li>Secours du trunk en cas de panne</li></ul>
+    </div>
+  </div>
+</section>
+
+<section id="synthese">
+  <h2>Synthèse</h2>
+  <div class="scroll"><table>
+    <tr><th>Élément</th><th>Solution</th></tr>
+    <tr><td>IPBX principal / secondaire</td><td>Yeastar P570 ×2, même site, même LAN/VLAN</td></tr>
+    <tr><td>Redondance PBX</td><td>Hot Standby</td></tr>
+    <tr><td>Accès principal</td><td>FTTO symétrique, 100 Mbit/s recommandé</td></tr>
+    <tr><td>Accès secondaire</td><td>FTTH, 300 Mbit/s à 1 Gbit/s</td></tr>
+    <tr><td>Routage WAN</td><td>Dual-WAN</td></tr>
+    <tr><td>Capacité</td><td>500 extensions, 120 appels simultanés</td></tr>
+    <tr><td>Codec de référence</td><td>G.711</td></tr>
+    <tr><td>Réseau et priorisation</td><td>VLAN VoIP dédié, QoS voix</td></tr>
+    <tr><td>Secours supplémentaire</td><td>4G/5G possible</td></tr>
+  </table></div>
+  <div class="principle" style="margin-top:24px">
+    <div><div class="arrow">FTTO → FTTH</div><h3>Redondance réseau</h3><p>Une panne de connectivité WAN ne coupe pas la téléphonie.</p></div>
+    <div><div class="arrow">P570 A → P570 B</div><h3>Redondance téléphonie</h3><p>Une panne matérielle de l'IPBX est absorbée par le Hot Standby.</p></div>
+  </div>
+</section>
+
+</main>
+<footer><div class="wrap">Architecture technique · Solution de téléphonie Yeastar</div></footer>
+
+<script>
+const s={ftto:true,ftth:true,g:true,a:true};
+const set=(q,v)=>document.querySelectorAll(q).forEach(e=>e.setAttribute('data-s',v));
+function render(){
+  const order=['ftto','ftth','g'],names={ftto:'la FTTO',ftth:'la FTTH',g:'la 4G/5G'};
+  const act=order.find(k=>s[k]);
+  order.forEach(k=>set('[data-w="'+k+'"]',!s[k]?'down':k===act?'on':'idle'));
+  set('[data-p="a"]',s.a?'on':'down');
+  set('[data-p="b"]',s.a?'idle':'on');
+  const w=act?(act==='ftto'?'Internet via la FTTO.':'Bascule Dual-WAN : Internet via '+names[act]+'.'):'Plus aucune connectivité Internet.';
+  document.getElementById('status').textContent=w+' '+(s.a?'P570 A actif.':'Hot Standby : P570 B a pris le relais.');
+}
+document.querySelectorAll('.ctrl button').forEach(b=>b.addEventListener('click',()=>{
+  const k=b.dataset.k;s[k]=!s[k];b.setAttribute('aria-pressed',String(!s[k]));render();
+}));
+render();
+</script>
+</body>
+</html>
+
